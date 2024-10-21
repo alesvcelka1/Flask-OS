@@ -33,3 +33,6 @@ tomli==2.0.1
 typing_extensions==4.12.2
 webencodings==0.5.1
 Werkzeug==2.0.3
+Flask==2.0.3
+Flask-MySQLdb==1.0.1  # pro připojení k MySQL
+
