@@ -1,25 +1,35 @@
-# Standard Library imports
-import os
-from dotenv import load_dotenv
+from flask import Flask, request, jsonify
+import MySQLdb
 
-# Core Flask imports
+app = Flask(__name__)
 
-# Third-party imports
+# Připojení k databázi
+def get_db_connection():
+    return MySQLdb.connect(
+        host='db',  # název služby v docker-compose
+        user='root',
+        password='rootpassword',
+        database='mydatabase'
+    )
 
-# App imports
-from app import create_app, db_manager
-from app.models import Account, User, Role, UserRole
+@app.route('/')
+def hello():
+    return "Hello, World!"
 
+@app.route('/add', methods=['POST'])
+def add_entry():
+    data = request.json
+    name = data.get('name')
 
-dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO entries (name) VALUES (%s)', (name,))
+    conn.commit()
+    cursor.close()
+    conn.close()
 
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
+    return jsonify({'status': 'success', 'name': name})
 
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
 
-app = create_app(os.getenv("FLASK_CONFIG") or "dev")
-
-
-@app.shell_context_processor
-def make_shell_context():
-    return dict(db=db_manager, User=User, Account=Account, Role=Role, UserRole=UserRole)
